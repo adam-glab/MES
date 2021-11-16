@@ -2,6 +2,7 @@
 #include "Node.h"
 #include "Element.h"
 #include <iostream>
+#include <iomanip>
 
 struct grid {
 	double H, B; // heigth, length

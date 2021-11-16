@@ -7,7 +7,7 @@
 
 void calcJacobian(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G);
 void calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double k, double detJ, double** sumArray);
-void calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double k, double detJ);
+void calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double k);
 
 const int nIP = 2;
 const double k = 30.;
@@ -19,8 +19,8 @@ int main() {
 	Element4_2D E(nIP);
 	
 	// Create grid
-	const grid G(0.025, 0.025, 2, 2);
-	//const grid G(0.2, 0.1, 5, 4);
+	//const grid G(0.025, 0.025, 2, 2);
+	const grid G(0.2, 0.1, 5, 4);
 
 	E.printGauss();
 	G.printNodes();
@@ -37,12 +37,13 @@ int main() {
 	}
 
 	for (int i = 0; i < G.nE; i++) {
+		std::cout << "::::::::ELEMENT " << i + 1 << "::::::::" << std::endl;
 		for (int j = 0; j < nIP*nIP; j++) {
 			calcJacobian(i, j, &J, &J_inv, &E, G);
 			double detJ = J.j_matrix[0][0] * J.j_matrix[1][1] - J.j_matrix[0][1] * J.j_matrix[1][0];
-			std::cout << "detJ: " << detJ << std::endl <<std::endl;
+			//std::cout << "detJ: " << detJ << std::endl <<std::endl;
 			calcHTest(i, j, &J, &J_inv, &E, G, k, detJ,sumOfH);
-			calcHbcTest(i, j, &J, &J_inv, &E, G, 25, 0.0125);
+			calcHbcTest(i, j, &J, &J_inv, &E, G, 25);
 		}
 		std::cout << "H matrix for element E" << i + 1 << std::endl;
 		for (int x = 0; x < 4; x++) {
@@ -56,7 +57,6 @@ int main() {
 			for (int z = 0; z < 4; z++) {
 				sumOfH[x][z] = 0.;
 			}
-			std::cout << std::endl;
 		}	
 	}
 	for (int i = 0; i < 4; i++) {
@@ -87,11 +87,11 @@ void calcJacobian(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E,
 	J_inv->j_matrix[1][0] = -1.0 * ((1 / detJ) * J->j_matrix[0][1]);
 	J_inv->j_matrix[1][1] = (1 / detJ) * J->j_matrix[0][0];
 
-	std::cout << "Integral Point Number: " << nIP + 1 << std::endl;
-	std::cout << "::::::::::j_inv::::::::::" << std::endl;
-	J_inv->printJacobian();
-	std::cout << "::::::::::::j::::::::::::" << std::endl;
-	J->printJacobian();
+	//std::cout << "Integral Point Number: " << nIP + 1 << std::endl;
+	//std::cout << "::::::::::j_inv::::::::::" << std::endl;
+	//J_inv->printJacobian();
+	//std::cout << "::::::::::::j::::::::::::" << std::endl;
+	//J->printJacobian();
 }
 
 void calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double k, double detJ, double** sumArray) {
@@ -136,21 +136,24 @@ void calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, gr
 	}
 }
 
-void calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double k, double detJ) {
+void calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double k) {
 
 	std::cout << "Hbc for IP" << nIP+1 << std::endl;
 	double my_detJ = 0.;
 	double NNT[4][4] = { 0. };
 	double array_detJ[4] = { 0. };
-	array_detJ[0] = my_detJ = 0.5 * sqrt(pow((G.nodes[G.elements[nE].ID[0] - 1].x) - (G.nodes[G.elements[nE].ID[1] - 1].x), 2) + pow((G.nodes[G.elements[nE].ID[0] - 1].y - (G.nodes[G.elements[nE].ID[1] - 1].y)), 2));
-	array_detJ[1] = my_detJ = 0.5 * sqrt(pow((G.nodes[G.elements[nE].ID[1] - 1].x) - (G.nodes[G.elements[nE].ID[2] - 1].x), 2) + pow((G.nodes[G.elements[nE].ID[1] - 1].y - (G.nodes[G.elements[nE].ID[2] - 1].y)), 2));
-	array_detJ[2] = my_detJ = 0.5 * sqrt(pow((G.nodes[G.elements[nE].ID[2] - 1].x) - (G.nodes[G.elements[nE].ID[3] - 1].x), 2) + pow((G.nodes[G.elements[nE].ID[2] - 1].y - (G.nodes[G.elements[nE].ID[3] - 1].y)), 2));
-	array_detJ[3] = my_detJ = 0.5 * sqrt(pow((G.nodes[G.elements[nE].ID[3] - 1].x) - (G.nodes[G.elements[nE].ID[0] - 1].x), 2) + pow((G.nodes[G.elements[nE].ID[3] - 1].y - (G.nodes[G.elements[nE].ID[0] - 1].y)), 2));
-
+	for (int i = 0; i < 4; i++) {
+		if (G.nodes[G.elements[nE].ID[(i+3)%4] - 1].BC == 0 || G.nodes[G.elements[nE].ID[i % 4] - 1].BC == 0) {
+			array_detJ[i] = 0.;
+		}
+		else {
+			array_detJ[i] = 0.5 * sqrt(pow((G.nodes[G.elements[nE].ID[(i+3)%4] - 1].x) - (G.nodes[G.elements[nE].ID[i%4] - 1].x), 2) + pow((G.nodes[G.elements[nE].ID[(i+3)%4] - 1].y - (G.nodes[G.elements[nE].ID[i%4] - 1].y)), 2));
+		}
+	}
+	
 	for (int z = 0; z < 4; z++) {
-		std::cout << "detJ inner="<< array_detJ[z] << std::endl;
 		for (int x = 0; x < 4; x++) {
-			NNT[z][x] = k * array_detJ[z] * ((E->N[nIP][0][z] * E->N[nIP][0][x]) + (E->N[nIP][1][z] * E->N[nIP][1][x]));
+			NNT[z][x] = k * array_detJ[nIP/E->nIP] * ((E->N[nIP][0][z] * E->N[nIP][0][x]) + (E->N[nIP][1][z] * E->N[nIP][1][x]));
 		}
 	}
 	for (int i = 0; i < 4; i++) {
