@@ -138,22 +138,29 @@ void calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, gr
 
 void calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double k) {
 
-	std::cout << "Hbc for IP" << nIP+1 << std::endl;
+	std::cout << ":::::Hbc for IP" << nIP+1 <<":::::" << std::endl;
 	double my_detJ = 0.;
 	double NNT[4][4] = { 0. };
 	double array_detJ[4] = { 0. };
 	for (int i = 0; i < 4; i++) {
-		if (G.nodes[G.elements[nE].ID[(i+3)%4] - 1].BC == 0 || G.nodes[G.elements[nE].ID[i % 4] - 1].BC == 0) {
+		// is boundary condition met
+		//(i+1)%4, i%4 -> start from downmost side and go clockwise
+		if (G.nodes[G.elements[nE].ID[(i+1) % 4] - 1].BC == false || G.nodes[G.elements[nE].ID[(i) % 4] - 1].BC == false) {
 			array_detJ[i] = 0.;
 		}
 		else {
-			array_detJ[i] = 0.5 * sqrt(pow((G.nodes[G.elements[nE].ID[(i+3)%4] - 1].x) - (G.nodes[G.elements[nE].ID[i%4] - 1].x), 2) + pow((G.nodes[G.elements[nE].ID[(i+3)%4] - 1].y - (G.nodes[G.elements[nE].ID[i%4] - 1].y)), 2));
+		// length of side
+			array_detJ[i] = 0.5 * sqrt(pow((G.nodes[G.elements[nE].ID[(i+1) % 4] - 1].x - (G.nodes[G.elements[nE].ID[(i) % 4] - 1].x)), 2) 
+									 + pow((G.nodes[G.elements[nE].ID[(i+1) % 4] - 1].y - (G.nodes[G.elements[nE].ID[(i) % 4] - 1].y)), 2)
+									   );
 		}
+		std::cout << array_detJ[i] << " ";
 	}
+	std::cout << std::endl;
 	
 	for (int z = 0; z < 4; z++) {
 		for (int x = 0; x < 4; x++) {
-			NNT[z][x] = k * array_detJ[nIP/E->nIP] * ((E->N[nIP][0][z] * E->N[nIP][0][x]) + (E->N[nIP][1][z] * E->N[nIP][1][x]));
+			NNT[z][x] = k * array_detJ[nIP%(E->nIP+nIP)] * ((E->N[nIP][0][z] * E->N[nIP][0][x]) + (E->N[nIP][1][z] * E->N[nIP][1][x]));
 		}
 	}
 	for (int i = 0; i < 4; i++) {
