@@ -1,6 +1,8 @@
 #pragma once
 #include "Node.h"
 #include "Element.h"
+#include <iostream>
+#include <iomanip>
 
 struct grid {
 	double H, B; // heigth, length
@@ -30,8 +32,8 @@ struct grid {
 			else if (i % nH == 0) {
 				increment++;
 			}
-			nodes[i].x = increment * B / (nB - 1); // 0*dx, 1*dx, 2*dx ..
-			nodes[i].y = (i % nH) * H / (nH - 1);
+			nodes[i].x = increment * B / (nB - 1.0); // 0*dx, 1*dx, 2*dx ..
+			nodes[i].y = (i % nH) * H / (nH - 1.0);
 
 			if (i % nH == 0 || i % nH == nH - 1 || i < nH || i > nN - nH) {
 				nodes[i].BC = true;
@@ -57,4 +59,7 @@ struct grid {
 
 		}
 	};
+	void printNodes() const;
+	void printElements() const;
+
 };

@@ -1,14 +1,13 @@
 #pragma once
-#include <math.h>
+#include <cmath>
+#include <iostream>
+#include <iomanip>
 
 struct gauss {
-
 	// gauss x const
 	double* xC;
-
 	// weight points
 	double* wP;
-
 	int N;
 	gauss(int N0) : N(N0) {
 		if (N == 2) {
@@ -27,17 +26,17 @@ struct gauss {
 			xC[2] = sqrt(3.0 / 5.0);
 
 			wP = new double[N];
-			wP[0] = 5/9;
-			wP[1] = 8/9;
-			wP[2] = 5/9;
+			wP[0] = 5./9.;
+			wP[1] = 8./9.;
+			wP[2] = 5./9.;
 		}
 		else {
+			throw std::out_of_range("Illegal integral point count passed to constructor\n");
 			// further wP,xC
 		}
 	}
 
 	~gauss() {
-		std::cout << "Gauss - destructor...\n";
 		delete[] xC;
 		delete[] wP;
 	}
