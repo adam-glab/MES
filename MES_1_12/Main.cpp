@@ -3,18 +3,11 @@
 #include "Solver.h"
 
 // pass to grid
-const int nIP = 2;
+const int nIP = 3;
 const double H = 0.1, B = 0.1;
 const int nH = 4, nB = 4;
 // factor values
 const double k = 25., alpha = 300., t_env = 1200, c = 700, ro = 7800, dTau = 50;
-
-// helper print funcs
-/*
-*
-* 
-* 
-*/
 
 int main() {
 
@@ -29,7 +22,10 @@ int main() {
 	//G.printNodes();
 	//G.printElements();
 
+
+	//********************************
 	// Global array of H-vals in nodes
+	//********************************
 	// nN x nN
 	double** globalH = new double* [G.nH*G.nB];
 	for (int i = 0; i < G.nH*G.nB; i++) {
@@ -40,14 +36,19 @@ int main() {
 			globalH[i][j] = 0.;
 		}
 	}
+
+	//********************************
 	// Global array of P-vals in nodes
+	//********************************
 	// 1 x nN
 	double* globalP = new double [G.nH * G.nB];
 	for (int i = 0; i < G.nH * G.nB; i++) {
 		globalP[i] = 0.;
 	}
 
+	//********************************
 	// Global C-matrix
+	//********************************
 	// nN x nN
 	double** globalC = new double* [G.nH * G.nB];
 	for (int i = 0; i < G.nH * G.nB; i++) {
@@ -105,23 +106,27 @@ int main() {
 			Solver::calcJacobian(i, j, &J, &J_inv, &E, G);
 			double detJ = J.j_matrix[0][0] * J.j_matrix[1][1] - J.j_matrix[0][1] * J.j_matrix[1][0];
 			Solver::calcHTest(i, j, &J, &J_inv, &E, G, k, detJ, sumOfH, globalH);
-			Solver::calcHbcTest(i, j, &J, &J_inv, &E, G, alpha, sumOfHbc);
-			Solver::calcPTest(i, j, &J, &J_inv, &E, G, alpha, t_env, sumOfP);
 			Solver::calcCTest(i, j, &J, &J_inv, &E, G, c, ro, detJ, sumOfC, globalC);
+		}
+
+		// For each wall of element calculate Hbc and P vector
+		for (int x = 0; x < 4; x++) {
+			Solver::calcHbcTest(i, x, &J, &J_inv, &E, G, alpha, sumOfHbc);
+			Solver::calcPTest(i, x, &J, &J_inv, &E, G, alpha, t_env, sumOfP);
 		}
 
 		//std::cout << "H matrix for element E" << i + 1 << std::endl;
 		for (int x = 0; x < 4; x++) {
 			for (int z = 0; z < 4; z++) {
 				// add to global H matrix
-				globalH[G.elements[i].ID[x] - 1][G.elements[i].ID[z] - 1] += sumOfH[x][z] /*+ sumOfHbc[x][z]*/;
+				globalH[G.elements[i].ID[x] - 1][G.elements[i].ID[z] - 1] += sumOfH[x][z] + sumOfHbc[x][z];
 				globalC[G.elements[i].ID[x] - 1][G.elements[i].ID[z] - 1] += sumOfC[x][z];
 				//std::cout <<std::setw(12)<< sumOfH[x][z];
 			}
 			//std::cout << std::endl;
 		}
 
-		/*std::cout << "Hbc matrix for element E" << i + 1 << std::endl;
+		std::cout << "Hbc matrix for element E" << i + 1 << std::endl;
 		for (int x = 0; x < 4; x++) {
 			for (int z = 0; z < 4; z++) {
 				std::cout << std::setw(12) << sumOfHbc[x][z];
@@ -129,7 +134,7 @@ int main() {
 			std::cout << std::endl;
 		}
 
-		std::cout << std::endl;*/
+		std::cout << std::endl;
 		/*std::cout << "C matrix for element E" << i + 1 << std::endl;
 		for (int x = 0; x < 4; x++) {
 			for (int z = 0; z < 4; z++) {

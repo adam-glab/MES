@@ -71,7 +71,7 @@ void Solver::calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 
 void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double alpha, double** sumArray) {
 
-	//std::cout << ":::::Hbc for IP" << nIP + 1 << ":::::" << std::endl;
+	std::cout << ":::::Hbc for surface" << nIP + 1 << ":::::" << std::endl;
 	double my_detJ = 0.;
 	double NNT[4][4] = { 0. }; // hold sum(N_transposed * N) * alpha * detJ
 	double array_detJ[4] = { 0. };
@@ -89,11 +89,30 @@ void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4
 		}
 		// std::cout << array_detJ[i] << " ";
 	}
-	//std::cout << std::endl;
-
-	for (int z = 0; z < 4; z++) {
-		for (int x = 0; x < 4; x++) {
-			NNT[z][x] = alpha * array_detJ[nIP % (E->nIP + nIP)] * ((E->N[nIP][0][z] * E->N[nIP][0][x]) + (E->N[nIP][1][z] * E->N[nIP][1][x]));
+	std::cout << std::endl;
+	if (E->nIP == 2) {
+		// 4 surfaces
+		for (int z = 0; z < 4; z++) {
+			for (int x = 0; x < 4; x++) {
+				NNT[z][x] = alpha * array_detJ[nIP % (E->nIP + nIP)] * 
+					(
+						  E->g->wP[0] * (E->N_shape[nIP][0][z] * E->N_shape[nIP][0][x])
+						+ E->g->wP[1] * (E->N_shape[nIP][1][z] * E->N_shape[nIP][1][x])
+					);
+			}
+		}
+	}
+	else if (E->nIP == 3) {
+		// 4 surfaces
+		for (int z = 0; z < 4; z++) {
+			for (int x = 0; x < 4; x++) {
+				NNT[z][x] = alpha * array_detJ[nIP % (E->nIP-1 + nIP)] * 
+					(
+						  E->g->wP[0] * (E->N_shape[nIP][0][z] * E->N_shape[nIP][0][x]) 
+						+ E->g->wP[1] * (E->N_shape[nIP][1][z] * E->N_shape[nIP][1][x]) 
+						+ E->g->wP[2] * (E->N_shape[nIP][2][z] * E->N_shape[nIP][2][x])
+					);
+			}
 		}
 	}
 
@@ -103,12 +122,12 @@ void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4
 			sumArray[z][x] += tmp;
 		}
 	}
-	/*for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			std::cout << std::setw(12) << NNT[i][j];
 		}
 		std::cout << std::endl;
-	}*/
+	}
 }
 
 void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double alpha, double t_env, double* sumArray) {
@@ -133,7 +152,25 @@ void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 	std::cout << std::endl;
 
 	for (int x = 0; x < 4; x++) {
-		NT[x] = alpha * array_detJ[nIP % (E->nIP + nIP)] * ((E->N[nIP][0][x] * t_env) + (E->N[nIP][1][x] * t_env));
+		NT[x] = alpha * array_detJ[nIP % (E->nIP + nIP)] * ((E->N_shape[nIP][0][x] * t_env) + (E->N_shape[nIP][1][x] * t_env));
+	}
+
+	if (E->nIP == 2) {
+		// 4 surfaces
+		for (int x = 0; x < 4; x++) {
+			NT[x] = alpha * array_detJ[nIP % (E->nIP + nIP)] * ((E->N_shape[nIP][0][x] * t_env) + (E->N_shape[nIP][1][x] * t_env));
+		}
+	}
+	else if (E->nIP == 3) {
+		// 4 surfaces
+		for (int x = 0; x < 4; x++) {
+			NT[x] = alpha * array_detJ[nIP % (E->nIP + nIP)] * 
+				(
+					E->g->wP[0] * (E->N_shape[nIP][0][x] * t_env) + 
+					E->g->wP[1] * (E->N_shape[nIP][1][x] * t_env) + 
+					E->g->wP[2] * (E->N_shape[nIP][2][x] * t_env)
+				);
+		}
 	}
 
 	for (int x = 0; x < 4; x++) {
@@ -148,13 +185,6 @@ void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 
 void Solver::calcCTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double c, double ro, double detJ, double** sumArray, double** globalArray){
 	
-
-	double localC[4][4] = { 0. };
-	for (int z = 0; z < 4; z++) {
-		for (int x = 0; x < 4; x++) {
-			localC[z][x] = c * ro * detJ * E->N_ofIP[nIP][z] * E->N_ofIP[nIP][x];
-		}
-	}
 	/*
 	* include weight values for integral points
 	* ==============
@@ -167,9 +197,16 @@ void Solver::calcCTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 	* ==============
 	* using mod E.nIP: index = 0,..E.nIP-1
 	*/
+	double resArray[4][4] = { 0. };
 	for (int z = 0; z < 4; z++) {
 		for (int x = 0; x < 4; x++) {
-			double tmp = localC[z][x];
+			resArray[z][x] = c * ro * detJ * E->g->wP[nIP % E->nIP] * E->g->wP[nIP / E->nIP] * E->N_ofIP[nIP][z] * E->N_ofIP[nIP][x];
+		}
+	}
+
+	for (int z = 0; z < 4; z++) {
+		for (int x = 0; x < 4; x++) {
+			double tmp = resArray[z][x];
 			sumArray[z][x] += tmp;
 		}
 	}

@@ -25,10 +25,11 @@ void Element4_2D::printGauss() const{
 		}
 		std::cout << std::endl;
 	}
+	std::cout << "N_shape function vals\n";
 	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 2; j++) {
+		for (int j = 0; j < nIP; j++) {
 			for (int x = 0; x < 4; x++) {
-				std::cout << std::setw(16) << N[i][j][x];
+				std::cout << std::setw(16) << N_shape[i][j][x];
 			}
 			std::cout << std::endl;
 		}
