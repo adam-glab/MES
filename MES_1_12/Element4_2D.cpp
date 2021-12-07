@@ -1,6 +1,6 @@
 #include "Element4_2D.h"
 
-void Element4_2D::printGauss() const{
+void Element4_2D::printElementData() const{
 
 	for (int i = 0; i < 4; i++) {
 		std::cout << std::setw(16) << "dNdE" << i + 1;

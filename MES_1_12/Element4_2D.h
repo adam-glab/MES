@@ -14,7 +14,7 @@ struct Element4_2D {
 	// [nIP*nIP][4(N-func value)]
 	double** dN_dn = new double* [nIP * nIP];
 
-	void printGauss() const;
+	void printElementData() const;
 	
 	Element4_2D(int n0) : nIP(n0) {
 

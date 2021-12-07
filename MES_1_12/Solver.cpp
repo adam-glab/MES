@@ -210,10 +210,13 @@ void Solver::calcCTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 }
 
 void Solver::includeTimeH(grid G, double** matrixH, double** matrixC, double* vectorP, double dTau){
+	std::cout << "::::::::::[H] = [H]+[C]/dT::::::::::" << std::endl;
 	for (int i = 0; i < G.nN; i++) {
 		for (int j = 0; j < G.nN; j++) {
 			matrixH[i][j] = matrixH[i][j] + (matrixC[i][j] / dTau);
+			std::cout << std::setw(8) << std::setprecision(4) << matrixH[i][j];
 		}
+		std::cout << std::endl;
 	}
 }
 
@@ -221,12 +224,10 @@ double* Solver::gaussScheme(double** matrix, double* vector, int size)
 {
 	if (size < 1) {
 		throw std::out_of_range("Invalid matrix size");
-		exit(-69);
 	}
 	for (int i = 0; i < size; i++) {
 		if (matrix[i][i] == 0) {
-			throw std::out_of_range("Invalid matrix size");
-			exit(-420);
+			throw std::out_of_range("Diagonal = 0");
 		}
 	}
 	double** buffArray = new double* [size];
@@ -255,7 +256,6 @@ double* Solver::gaussScheme(double** matrix, double* vector, int size)
 			}
 		}
 	}
-
 	double* T1 = new double[size];
 	for (int i = size - 1; i >= 0; i--)
 	{
@@ -277,7 +277,6 @@ double* Solver::gaussScheme(double** matrix, double* vector, int size)
 		delete[] buffArray[i];
 	}
 	delete[] buffArray;
-
 	return T1;
 }
 
@@ -286,11 +285,9 @@ void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, g
 
 	double* newP_vec = new double[G.nN];
 	for (int x = 0; x < simTime / timeStep; x++) {
-		
 		for (int i = 0; i < G.nN; i++) {
 			newP_vec[i] = 0.;
 		}
-
 		std::cout << "::::::::::ITERATION "<< x << " ::::::::::" << std::endl;
 		std::cout << "::::::::::{P} = {P}+{[C]/dT} * {T0}::::::::::" << std::endl;
 		for (int i = 0; i < G.nN; i++) {
@@ -301,7 +298,6 @@ void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, g
 			std::cout << std::fixed << std::showpoint << std::setprecision(1);
 			std::cout << newP_vec[i] << "  ";
 		}
-
 		double* T1 = Solver::gaussScheme(Hmatrix, newP_vec, G.nN);
 		Solver::getMinMax(T1, G.nN);
 		for (int i = 0; i < G.nN; i++) {

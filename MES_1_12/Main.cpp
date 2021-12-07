@@ -1,9 +1,7 @@
-#include <iostream>
-#include <iomanip>
 #include "Solver.h"
 
 // pass to grid
-const int nIP = 2;
+const int nIP = 3;
 const double H = 0.1, B = 0.1;
 const int nH = 4, nB = 4;
 // factor values
@@ -18,11 +16,10 @@ int main() {
 //****************************************************************
 // Grid management
 //****************************************************************
-
-	E.printGauss();
 	//G.printNodes();
 	//G.printElements();
-
+	//E.printElementData();
+	
 //****************************************************************
 // Global array of H-vals in nodes nN x nN
 //****************************************************************
@@ -110,7 +107,6 @@ int main() {
 			Solver::calcHTest(i, j, &J, &J_inv, &E, G, k, detJ, sumOfH, globalH);
 			Solver::calcCTest(i, j, &J, &J_inv, &E, G, c, ro, detJ, sumOfC, globalC);
 		}
-
 	//****************************************************************
 	// For each wall of element calculate Hbc and P vector
 	//****************************************************************
@@ -159,7 +155,7 @@ int main() {
 		std::cout << std::endl;
 
 	//****************************************************************
-	// Reset array for next element
+	// Reset arrays for next element
 	//****************************************************************
 		for (int x = 0; x < 4; x++) {
 			for (int z = 0; z < 4; z++) {
@@ -197,17 +193,8 @@ int main() {
 // Operations on completed H,C matrixes and P, T0, T1 vectors
 //****************************************************************
 	Solver::includeTimeH(G, globalH, globalC, globalP, dTau);
+	Solver::calcNodeTemp(globalH, globalC, globalP, G, simTime, dTau);
 
-	std::cout << "::::::::::[H] = [H]+[C]/dT::::::::::" << std::endl;
-	for (int i = 0; i < G.nN; i++) {
-		for (int j = 0; j < G.nN; j++) {
-			std::cout << std::setw(8) << std::setprecision(4) << globalH[i][j];
-		}
-		std::cout << std::endl;
-	}
-
-	Solver::calcNodeTemp(globalH,globalC,globalP,G,simTime,dTau);
-	
 //****************************************************************
 // Free memory
 //****************************************************************
@@ -215,29 +202,23 @@ int main() {
 		delete[] sumOfH[i];
 	}
 	delete[] sumOfH;
-
 	for (int i = 0; i < 4; i++) {
 		delete[] sumOfC[i];
 	}
 	delete[] sumOfC;
-
 	for (int i = 0; i < 4; i++) {
 		delete[] sumOfHbc[i];
 	}
 	delete[] sumOfHbc;
-
 	for (int i = 0; i < G.nN; i++) {
 		delete[] globalH[i];
 	}
 	delete[] globalH;
-
 	for (int i = 0; i < G.nN; i++) {
 		delete[] globalC[i];
 	}
 	delete[] globalC;
-
 	delete[] globalP;
 	delete[] sumOfP;
-	//delete[] T1;
 	return 0;
 }
