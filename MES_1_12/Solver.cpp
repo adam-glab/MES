@@ -1,6 +1,6 @@
 #include "Solver.h"
 
-void Solver::calcJacobian(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G) {
+void Solver::calcJacobian(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G) {
 
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 2; j++) {
@@ -27,7 +27,7 @@ void Solver::calcJacobian(int nE, int nIP, jacobian* J, jacobian* J_inv, Element
 	//J->printJacobian();
 }
 
-void Solver::calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double k, double detJ, double** sumArray, double** globalArray) {
+void Solver::calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G, double k, double detJ, double** sumArray, double** globalArray) {
 
 	double dNdX[4] = { 0. };
 	double dNdY[4] = { 0. };
@@ -69,7 +69,7 @@ void Solver::calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 	}
 }
 
-void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double alpha, double** sumArray) {
+void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G, double alpha, double** sumArray) {
 
 	//std::cout << ":::::Hbc for surface" << nIP + 1 << ":::::" << std::endl;
 	double NNT[4][4] = { 0. }; // hold sum(N_transposed * N) * alpha * detJ
@@ -129,7 +129,7 @@ void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4
 	}*/
 }
 
-void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double alpha, double t_env, double* sumArray) {
+void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G, double alpha, double t_env, double* sumArray) {
 
 	//std::cout << ":::::P for IP" << nIP + 1 << ":::::" << std::endl;
 	double NT[4] = { 0. }; // hold sum(N_transposed * t_env) * alpha * detJ
@@ -180,7 +180,7 @@ void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 	std::cout << std::endl;*/
 }
 
-void Solver::calcCTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double c, double ro, double detJ, double** sumArray, double** globalArray){
+void Solver::calcCTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G, double c, double ro, double detJ, double** sumArray, double** globalArray){
 	
 	/*
 	* include weight values for integral points
@@ -209,14 +209,14 @@ void Solver::calcCTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 	}
 }
 
-void Solver::includeTimeH(grid G, double** matrixH, double** matrixC, double* vectorP, double dTau){
-	std::cout << "::::::::::[H] = [H]+[C]/dT::::::::::" << std::endl;
+void Solver::includeTimeH(Grid G, double** matrixH, double** matrixC, double* vectorP, double dTau){
+	//std::cout << "::::::::::[H] = [H]+[C]/dT::::::::::" << std::endl;
 	for (int i = 0; i < G.nN; i++) {
 		for (int j = 0; j < G.nN; j++) {
 			matrixH[i][j] = matrixH[i][j] + (matrixC[i][j] / dTau);
-			std::cout << std::setw(8) << std::setprecision(4) << matrixH[i][j];
+			//std::cout << std::setw(8) << std::setprecision(4) << matrixH[i][j];
 		}
-		std::cout << std::endl;
+		//std::cout << std::endl;
 	}
 }
 
@@ -281,25 +281,25 @@ double* Solver::gaussScheme(double** matrix, double* vector, int size)
 }
 
 
-void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, grid G, double simTime, double timeStep) {
+void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, Grid G, double simTime, double timeStep) {
 
 	double* newP_vec = new double[G.nN];
 	for (int x = 0; x < simTime / timeStep; x++) {
 		for (int i = 0; i < G.nN; i++) {
 			newP_vec[i] = 0.;
 		}
-		std::cout << "::::::::::ITERATION "<< x << " ::::::::::" << std::endl;
-		std::cout << "::::::::::{P} = {P}+{[C]/dT} * {T0}::::::::::" << std::endl;
+		//std::cout << "::::::::::ITERATION "<< x << " ::::::::::" << std::endl;
+		//std::cout << "::::::::::{P} = {P}+{[C]/dT} * {T0}::::::::::" << std::endl;
 		for (int i = 0; i < G.nN; i++) {
 			for (int j = 0; j < G.nN; j++) {
 				newP_vec[i] += (Cmatrix[i][j] / timeStep) * G.nodes[j].t0;
 			}
 			newP_vec[i] += Pvector[i];
-			std::cout << std::fixed << std::showpoint << std::setprecision(1);
-			std::cout << newP_vec[i] << "  ";
+			//std::cout << std::fixed << std::showpoint << std::setprecision(1);
+			//std::cout << newP_vec[i] << "  ";
 		}
 		double* T1 = Solver::gaussScheme(Hmatrix, newP_vec, G.nN);
-		Solver::getMinMax(T1, G.nN);
+		Solver::getMinMax(T1, G.nN, timeStep * (x + 1));
 		for (int i = 0; i < G.nN; i++) {
 			G.nodes[i].t0 = T1[i];
 		}
@@ -308,7 +308,7 @@ void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, g
 	delete[] newP_vec;
 }
 
-void Solver::getMinMax(double* arr, int size){
+void Solver::getMinMax(double* arr, int size, int step){
 	double min, max;
 	max = arr[0];
 	min = arr[0];
@@ -316,6 +316,7 @@ void Solver::getMinMax(double* arr, int size){
 		if (max < arr[i]) max = arr[i];
 		if (min > arr[i]) min = arr[i];
 	}
-	std::cout << std::fixed << std::showpoint << std::setprecision(3);
+	std::cout << step << " ";
+	std::cout << std::fixed << std::setw(12) << std::showpoint << std::setprecision(3);
 	std::cout << min << "  " << max << std::endl;
 }

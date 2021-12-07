@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-struct grid {
+struct Grid {
 	double H, B; // heigth, length
 	int nH, nB; // nodes /heigth, nodes /length
 	int nN;	// node count
@@ -13,7 +13,7 @@ struct grid {
 	Node* nodes;
 	element* elements;
 
-	grid(double H0, double B0, int noH, int noB, double temp0) : H(H0), B(B0), nH(noH), nB(noB), T0(temp0) {
+	Grid(double H0, double B0, int noH, int noB, double temp0) : H(H0), B(B0), nH(noH), nB(noB), T0(temp0) {
 
 		nN = noH * noB;
 		nE = (noH - 1) * (noB - 1);
@@ -63,5 +63,7 @@ struct grid {
 	};
 	void printNodes() const;
 	void printElements() const;
-
+	static void printGlobalH(double** globalH, Grid G);
+	static void printGlobalC(double** globalC, Grid G);
+	static void printGlobalP(double* globalP, Grid G);
 };

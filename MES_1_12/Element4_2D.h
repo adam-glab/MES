@@ -15,7 +15,11 @@ struct Element4_2D {
 	double** dN_dn = new double* [nIP * nIP];
 
 	void printElementData() const;
-	
+	static void printH(double**, int);
+	static void printHbc(double**, int);
+	static void printP(double*, int);
+	static void printC(double**, int);
+
 	Element4_2D(int n0) : nIP(n0) {
 
 		// ====================== //

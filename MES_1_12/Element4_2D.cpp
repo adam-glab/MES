@@ -43,3 +43,41 @@ void Element4_2D::printElementData() const{
 		std::cout << std::endl;
 	}
 }
+
+void Element4_2D::printH(double** Hmatrix, int el) {
+	std::cout << "H matrix for element E" << el + 1 << std::endl;
+	for (int x = 0; x < 4; x++) {
+		for (int z = 0; z < 4; z++) {
+			std::cout << std::setw(12) << Hmatrix[x][z];
+		}
+		std::cout << std::endl;
+	}
+}
+
+void Element4_2D::printHbc(double** Hbcmatrix, int el) {
+	std::cout << "Hbc matrix for element E" << el + 1 << std::endl;
+	for (int x = 0; x < 4; x++) {
+		for (int z = 0; z < 4; z++) {
+			std::cout << std::setw(12) << Hbcmatrix[x][z];
+		}
+		std::cout << std::endl;
+	}
+}
+
+void Element4_2D::printP(double* Pvector, int el) {
+	std::cout << "P vector for element E" << el + 1 << std::endl;
+	for (int z = 0; z < 4; z++) {
+		std::cout << std::setw(12) << Pvector[z];
+	}
+	std::cout << std::endl;
+}
+
+void Element4_2D::printC(double** Cmatrix, int el) {
+	std::cout << "C matrix for element E" << el + 1 << std::endl;
+	for (int x = 0; x < 4; x++) {
+		for (int z = 0; z < 4; z++) {
+			std::cout << std::setw(12) << Cmatrix[x][z];
+		}
+		std::cout << std::endl;
+	}
+}

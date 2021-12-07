@@ -12,7 +12,7 @@ int main() {
 	jacobian J;
 	jacobian J_inv;
 	Element4_2D E(nIP);
-	const grid G(H, B, nH, nB, T0);
+	const Grid G(H, B, nH, nB, T0);
 //****************************************************************
 // Grid management
 //****************************************************************
@@ -98,9 +98,8 @@ int main() {
 //****************************************************************
 // MAIN LOOP
 //****************************************************************
-
 	for (int i = 0; i < G.nE; i++) {
-		std::cout << "::::::::ELEMENT " << i + 1 << "::::::::" << std::endl;
+		//std::cout << "::::::::ELEMENT " << i + 1 << "::::::::" << std::endl;
 		for (int j = 0; j < nIP*nIP; j++) {
 			Solver::calcJacobian(i, j, &J, &J_inv, &E, G);
 			double detJ = J.j_matrix[0][0] * J.j_matrix[1][1] - J.j_matrix[0][1] * J.j_matrix[1][0];
@@ -117,42 +116,25 @@ int main() {
 	//****************************************************************
 	// Add to global H matrix and C matrix
 	//****************************************************************
-		//std::cout << "H matrix for element E" << i + 1 << std::endl;
 		for (int x = 0; x < 4; x++) {
 			for (int z = 0; z < 4; z++) {
 				globalH[G.elements[i].ID[x] - 1][G.elements[i].ID[z] - 1] += sumOfH[x][z] + sumOfHbc[x][z];
 				globalC[G.elements[i].ID[x] - 1][G.elements[i].ID[z] - 1] += sumOfC[x][z];
-				//std::cout <<std::setw(12)<< sumOfH[x][z];
 			}
-			//std::cout << std::endl;
 		}
 
-		/*std::cout << "Hbc matrix for element E" << i + 1 << std::endl;
-		for (int x = 0; x < 4; x++) {
-			for (int z = 0; z < 4; z++) {
-				std::cout << std::setw(12) << sumOfHbc[x][z];
-			}
-			std::cout << std::endl;
-		}
-
-		std::cout << std::endl;
-		std::cout << "C matrix for element E" << i + 1 << std::endl;
-		for (int x = 0; x < 4; x++) {
-			for (int z = 0; z < 4; z++) {
-				std::cout << std::setw(12) << sumOfC[x][z];
-			}
-			std::cout << std::endl;
-		}*/
+		//Element4_2D::printH(sumOfH, i);
+		//Element4_2D::printHbc(sumOfHbc, i);
+		//Element4_2D::printC(sumOfC, i);
 
 	//****************************************************************
 	// Add to global P vector
 	//****************************************************************
-		std::cout << "P vector for element E" << i + 1 << std::endl;
 		for (int z = 0; z < 4; z++) {
 			globalP[G.elements[i].ID[z] - 1] += sumOfP[z];
-			std::cout << std::setw(12) << sumOfP[z];
 		}
-		std::cout << std::endl;
+
+		//Element4_2D::printP(sumOfP, i);
 
 	//****************************************************************
 	// Reset arrays for next element
@@ -169,25 +151,9 @@ int main() {
 		}
 	}
 
-	std::cout << "::::::::::Global H matrix::::::::::" << std::endl;
-	for (int i = 0; i < G.nN; i++) {
-		for (int j = 0; j < G.nN; j++) {
-			std::cout << std::setw(8) << std::setprecision(4) << globalH[i][j];
-		}
-		std::cout << std::endl;
-	}
-	std::cout << "::::::::::Global P vector::::::::::" << std::endl;
-	for (int j = 0; j < G.nN; j++) {
-		std::cout << std::setprecision(12) << globalP[j] << std::endl;
-	}
-	std::cout << std::endl;
-	std::cout << "::::::::::Global C matrix::::::::::" << std::endl;
-	for (int i = 0; i < G.nN; i++) {
-		for (int j = 0; j < G.nN; j++) {
-			std::cout << std::setw(8) << std::setprecision(4) << globalC[i][j];
-		}
-		std::cout << std::endl;
-	}
+	//Grid::printGlobalH(globalH, G);
+	//Grid::printGlobalP(globalP, G);
+	//Grid::printGlobalC(globalC, G);
 
 //****************************************************************
 // Operations on completed H,C matrixes and P, T0, T1 vectors
