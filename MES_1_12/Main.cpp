@@ -3,23 +3,23 @@
 #include "Solver.h"
 
 // pass to grid
-const int nIP = 3;
+const int nIP = 2;
 const double H = 0.1, B = 0.1;
 const int nH = 4, nB = 4;
 // factor values
-const double k = 25., alpha = 300., t_env = 1200, c = 700, ro = 7800, dTau = 50, T0 = 100, simTime = 500;
+const double k = 25., alpha = 300., t_env = 1200, c = 700, ro = 7800, dTau = 50, simTime = 500, T0 = 100.;
 
 int main() {
 
 	jacobian J;
 	jacobian J_inv;
 	Element4_2D E(nIP);
-	const grid G(H, B, nH, nB);
+	const grid G(H, B, nH, nB, T0);
 //****************************************************************
 // Grid management
 //****************************************************************
 
-	//E.printGauss();
+	E.printGauss();
 	//G.printNodes();
 	//G.printElements();
 
@@ -99,15 +99,7 @@ int main() {
 		}
 	}
 //****************************************************************
-// Array of T0 in nodes
-//****************************************************************
-	// 1 x nN
-	//double* globalP = new double[G.nH * G.nB];
-	//for (int i = 0; i < G.nH * G.nB; i++) {
-	//	globalP[i] = 0.;
-	//}
-//****************************************************************
-//							MAIN LOOP
+// MAIN LOOP
 //****************************************************************
 
 	for (int i = 0; i < G.nE; i++) {
@@ -214,27 +206,7 @@ int main() {
 		std::cout << std::endl;
 	}
 
-	double* newP_vec = new double[G.nN];
-	for (int i = 0; i < G.nN; i++) {
-		newP_vec[i] = 0.;
-	}
-
-	std::cout << "::::::::::{P} = {P}+{[C]/dT} * {T0}::::::::::" << std::endl;
-	for (int i = 0; i < G.nN; i++) {
-		for (int j = 0; j < G.nN; j++) {
-			newP_vec[i] += (globalC[i][j]/dTau) * T0;
-		}
-		newP_vec[i] += globalP[i];
-		std::cout << std::fixed << std::showpoint << std::setprecision(1);
-		std::cout << newP_vec[i] <<"  ";
-	}
-
-	double* T1 = Solver::gaussScheme(globalH, newP_vec, G.nN);
-	/*std::cout << "New temp vector: " << std::endl;
-	for (int i = 0; i < G.nN; i++) {
-		std::cout << T1[i] << std::endl;
-	}*/
-	Solver::getMinMax(T1, G.nN);
+	Solver::calcNodeTemp(globalH,globalC,globalP,G,simTime,dTau);
 	
 //****************************************************************
 // Free memory
@@ -266,6 +238,6 @@ int main() {
 
 	delete[] globalP;
 	delete[] sumOfP;
-	delete[] T1;
+	//delete[] T1;
 	return 0;
 }

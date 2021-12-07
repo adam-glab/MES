@@ -9,14 +9,15 @@ struct grid {
 	int nH, nB; // nodes /heigth, nodes /length
 	int nN;	// node count
 	int nE;	// element count
-	node* nodes;
+	double T0; // T0 in node
+	Node* nodes;
 	element* elements;
 
-	grid(double H0, double B0, int noH, int noB) : H(H0), B(B0), nH(noH), nB(noB) {
+	grid(double H0, double B0, int noH, int noB, double temp0) : H(H0), B(B0), nH(noH), nB(noB), T0(temp0) {
 
 		nN = noH * noB;
 		nE = (noH - 1) * (noB - 1);
-		nodes = new node[nN];
+		nodes = new Node[nN];
 		elements = new element[nE];
 
 		// dx = B / (nB - 1)
@@ -41,6 +42,7 @@ struct grid {
 			else {
 				nodes[i].BC = false;
 			}
+			nodes[i].t0 = T0;
 		}
 
 		// #2 - Fill in element ids

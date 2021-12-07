@@ -4,17 +4,22 @@
 struct Element4_2D {
 	int nIP;	// no. of integral pts
 	gauss* g;	// vals of integral pts
-	double*** N_shape = new double**[4]; // [4(walls)] [nIP] [4(N-func value)]
-	double** N_ofIP = new double* [nIP*nIP]; // [nIP*nIP][4(N-func value)]
-	double** dN_dE = new double* [nIP * nIP];// [nIP*nIP][4(N-func value)]
-	double** dN_dn = new double* [nIP * nIP];// [nIP*nIP][4(N-func value)]
+
+	// [4(walls)][nIP][4(N-func value)]
+	double*** N_shape = new double**[4]; 
+	// [nIP*nIP][4(N-func value)]
+	double** N_ofIP = new double* [nIP*nIP];
+	// [nIP*nIP][4(N-func value)]
+	double** dN_dE = new double* [nIP * nIP];
+	// [nIP*nIP][4(N-func value)]
+	double** dN_dn = new double* [nIP * nIP];
 
 	void printGauss() const;
 	
 	Element4_2D(int n0) : nIP(n0) {
 
 		// ====================== //
-		//		nIP = 2			  //
+		// nIP = 2
 		// ====================== //
 
 		if (n0 == 2) {
@@ -126,7 +131,7 @@ struct Element4_2D {
 		}
 
 		// ====================== //
-		//		nIP = 3			  //
+		// nIP = 3
 		// ====================== //
 
 		if (n0 == 3) {
@@ -182,9 +187,6 @@ struct Element4_2D {
 					if (i % 2 == 0) {
 						tmp1 = g->xC[j % nIP];
 						tmp2 = -1. + i * 1.0;
-						if (i > 1) {
-							tmp1 = g->xC[(j) % nIP];
-						}
 					}
 					if (i % 2 != 0) {
 						tmp1 = pow(-1, i);
@@ -192,9 +194,6 @@ struct Element4_2D {
 							tmp1 = pow(-1, i + 1);
 						}
 						tmp2 = g->xC[(j) % nIP];
-						if (i > 2) {
-							tmp2 = g->xC[(j) % nIP];
-						}
 					}
 					N_shape[i][j][0] = 0.25 * ((1 - tmp1) * (1 - tmp2));
 					N_shape[i][j][1] = 0.25 * ((1 + tmp1) * (1 - tmp2));
@@ -222,11 +221,19 @@ struct Element4_2D {
 	~Element4_2D() {
 		for (int i = 0; i < nIP * nIP; i++) {
 			delete[] dN_dE[i];
-			delete[] dN_dn[i];
 		}
 		delete[] dN_dE;
+
+		for (int i = 0; i < nIP * nIP; i++) {
+			delete[] dN_dn[i];
+		}
 		delete[] dN_dn;
-	
+
+		for (int i = 0; i < nIP * nIP; i++) {
+			delete[] N_ofIP[i];
+		}
+		delete[] N_ofIP;
+
 		for (int x = 0; x < 4; x++) {
 			for (int y = 0; y < nIP; y++) {
 				delete[] N_shape[x][y];

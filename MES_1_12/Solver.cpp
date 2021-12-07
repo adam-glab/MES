@@ -72,8 +72,6 @@ void Solver::calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double alpha, double** sumArray) {
 
 	//std::cout << ":::::Hbc for surface" << nIP + 1 << ":::::" << std::endl;
-	
-	double my_detJ = 0.;
 	double NNT[4][4] = { 0. }; // hold sum(N_transposed * N) * alpha * detJ
 	double array_detJ[4] = { 0. };
 	for (int i = 0; i < 4; i++) {
@@ -134,8 +132,6 @@ void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4
 void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, grid G, double alpha, double t_env, double* sumArray) {
 
 	//std::cout << ":::::P for IP" << nIP + 1 << ":::::" << std::endl;
-
-	double my_detJ = 0.;
 	double NT[4] = { 0. }; // hold sum(N_transposed * t_env) * alpha * detJ
 	double array_detJ[4] = { 0. };
 	for (int i = 0; i < 4; i++) {
@@ -223,7 +219,6 @@ void Solver::includeTimeH(grid G, double** matrixH, double** matrixC, double* ve
 
 double* Solver::gaussScheme(double** matrix, double* vector, int size)
 {
-	//Sprawdzenie, czy dostarczona tablica jest macierz¹ minimum stopnia 1
 	if (size < 1) {
 		throw std::out_of_range("Invalid matrix size");
 		exit(-69);
@@ -286,7 +281,38 @@ double* Solver::gaussScheme(double** matrix, double* vector, int size)
 	return T1;
 }
 
-void* Solver::getMinMax(double* arr, int size){
+
+void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, grid G, double simTime, double timeStep) {
+
+	double* newP_vec = new double[G.nN];
+	for (int x = 0; x < simTime / timeStep; x++) {
+		
+		for (int i = 0; i < G.nN; i++) {
+			newP_vec[i] = 0.;
+		}
+
+		std::cout << "::::::::::ITERATION "<< x << " ::::::::::" << std::endl;
+		std::cout << "::::::::::{P} = {P}+{[C]/dT} * {T0}::::::::::" << std::endl;
+		for (int i = 0; i < G.nN; i++) {
+			for (int j = 0; j < G.nN; j++) {
+				newP_vec[i] += (Cmatrix[i][j] / timeStep) * G.nodes[j].t0;
+			}
+			newP_vec[i] += Pvector[i];
+			std::cout << std::fixed << std::showpoint << std::setprecision(1);
+			std::cout << newP_vec[i] << "  ";
+		}
+
+		double* T1 = Solver::gaussScheme(Hmatrix, newP_vec, G.nN);
+		Solver::getMinMax(T1, G.nN);
+		for (int i = 0; i < G.nN; i++) {
+			G.nodes[i].t0 = T1[i];
+		}
+		std::cout << std::endl;
+	}
+	delete[] newP_vec;
+}
+
+void Solver::getMinMax(double* arr, int size){
 	double min, max;
 	max = arr[0];
 	min = arr[0];
@@ -294,6 +320,6 @@ void* Solver::getMinMax(double* arr, int size){
 		if (max < arr[i]) max = arr[i];
 		if (min > arr[i]) min = arr[i];
 	}
+	std::cout << std::fixed << std::showpoint << std::setprecision(3);
 	std::cout << min << "  " << max << std::endl;
-	return nullptr;
 }

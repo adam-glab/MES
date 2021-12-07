@@ -1,4 +1,6 @@
 #pragma once
+#include "Solver.h"
+
 struct Data {
 	// pass to Grid
 	int 
