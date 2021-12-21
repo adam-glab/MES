@@ -1,6 +1,8 @@
 #pragma once
 #include "Solver.h"
 
+using namespace std;
+
 struct Data {
 	// pass to Grid
 	int 
@@ -19,4 +21,13 @@ struct Data {
 		c = 700, 
 		ro = 7800, 
 		dTau = 50;
+
+	int params[10] = { 0 };
+	static double** nodes; // params[8] x 2
+	static int** elems; // params[9] x 4
+	static int* bcs; // params
+	static int bc_counter;
+
+	void getParametersTest(ifstream& MyReadFile);
+	
 };

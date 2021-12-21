@@ -3,6 +3,8 @@
 #include "Element.h"
 #include <iostream>
 #include <iomanip>
+#include <fstream>
+#include <string>
 
 struct Grid {
 	double H, B; // heigth, length
