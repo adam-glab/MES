@@ -310,6 +310,7 @@ void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, G
 
 void Solver::getMinMax(double* arr, int size, int step){
 	double min, max;
+	int precision = 3;
 	max = arr[0];
 	min = arr[0];
 	for (int i = 0; i < size; i++) {
@@ -317,6 +318,6 @@ void Solver::getMinMax(double* arr, int size, int step){
 		if (min > arr[i]) min = arr[i];
 	}
 	std::cout << step << " ";
-	std::cout << std::fixed << std::setw(12) << std::showpoint << std::setprecision(3);
+	std::cout << std::fixed << std::setw(12) << std::showpoint << std::setprecision(precision);
 	std::cout << min << "  " << max << std::endl;
 }

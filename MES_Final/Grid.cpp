@@ -28,7 +28,7 @@ void Grid::printGlobalH(double** globalH, Grid G) {
 	std::cout << std::endl << "::::::::::Global H matrix::::::::::" << std::endl;
 	for (int i = 0; i < G.nN; i++) {
 		for (int j = 0; j < G.nN; j++) {
-			std::cout << std::setw(8) << std::setprecision(4) << globalH[i][j];
+			std::cout << std::setw(8) << std::setprecision(6) << globalH[i][j];
 		}
 		std::cout << std::endl;
 	}
@@ -38,7 +38,7 @@ void Grid::printGlobalC(double** globalC, Grid G) {
 	std::cout << std::endl << "::::::::::Global C matrix::::::::::" << std::endl;
 	for (int i = 0; i < G.nN; i++) {
 		for (int j = 0; j < G.nN; j++) {
-			std::cout << std::setw(8) << std::setprecision(4) << globalC[i][j];
+			std::cout << std::setw(8) << std::setprecision(6) << globalC[i][j];
 		}
 		std::cout << std::endl;
 	}

@@ -3,7 +3,7 @@
 
 //****************************************************************
 // In order to change data read mode (be it file stream or user values)
-// uncomment marked blocks
+// uncomment/comment marked blocks in main() below
 //****************************************************************
 
 
@@ -39,23 +39,23 @@ int main() {
 // READ VALUES FROM FILE
 //****************************************************************
 	Data d;
-	ifstream MyData("Test3_31_31_kwadrat.txt");
+	ifstream MyData("Test1_4_4_my.txt");
 
 	//****************************************************************
 	// comment G = { H,B,nH,nB,T0 }; to avoid data overwrite
 	// uncomment code below this comment to enable file stream
 	//****************************************************************
 
-	//d.getParametersTest(MyData);
-	//d.setParameters(&G);
-	//simTime = d.simTime;
-	//dTau = d.dTau;
-	//k = d.k;
-	//alpha = d.alpha;
-	//t_env = d.t_env;
-	//T0 = d.T0;
-	//ro = d.ro;
-	//c = d.c;
+	/*d.getParametersTest(MyData);
+	d.setParameters(&G);
+	simTime = d.simTime;
+	dTau = d.dTau;
+	k = d.k;
+	alpha = d.alpha;
+	t_env = d.t_env;
+	T0 = d.T0;
+	ro = d.ro;
+	c = d.c;*/
 
 //****************************************************************
 // USER CHANGES VALUES OF CONSTS
