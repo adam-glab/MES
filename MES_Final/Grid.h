@@ -12,20 +12,78 @@ struct Grid {
 	int nN;	// node count
 	int nE;	// element count
 	double T0; // T0 in node
+
+// Global array of H-vals in nodes [nN x nN]
+	double** globalH = new double* [nN];
+// Global array of P-vals in nodes {1 x nN}
+	double* globalP = new double[nN];
+// Global C-matrix [nN x nN]
+	double** globalC = new double* [nN];
+
 	Node* nodes;
-	element* elements;
+	Element* elements;
 
-	Grid() { H = 0; B = 0; nH = 0; nB = 0; nE = 0; nN = 0; T0 = 0; };
+// Constructor to be used in the case of file input
+	Grid(int noN, int noE) :  nN(noN), nE(noE) {
+		H = 0.;
+		B = 0.;
+		nH = nB = 0;
+		T0 = 0.;
 
-	Grid(double H0, double B0, int noH, int noB, double temp0) : H(H0), B(B0), nH(noH), nB(noB), T0(temp0) {
+		for (int i = 0; i < nN; i++) {
+			globalH[i] = new double[nN];
+		}
+		for (int i = 0; i < nN; i++) {
+			for (int j = 0; j < nN; j++) {
+				globalH[i][j] = 0.;
+			}
+		}
 
-		nN = noH * noB;
+		for (int i = 0; i < nN; i++) {
+			globalP[i] = 0.;
+		}
+
+		for (int i = 0; i < nN; i++) {
+			globalC[i] = new double[nN];
+		}
+		for (int i = 0; i < nN; i++) {
+			for (int j = 0; j < nN; j++) {
+				globalC[i][j] = 0.;
+			}
+		}
+	};
+
+// Constructor to be used in the case of user input
+	Grid(double H0, double B0, int noH, int noB, int noN, double temp0) : H(H0), B(B0), nH(noH), nB(noB), nN(noN), T0(temp0) {
+
 		nE = (noH - 1) * (noB - 1);
 		nodes = new Node[nN];
-		elements = new element[nE];
+		elements = new Element[nE];
 
-		// dx = B / (nB - 1)
-		// dy = H / (nH - 1)
+		for (int i = 0; i < nN; i++) {
+			globalH[i] = new double[nN];
+		}
+		for (int i = 0; i < nN; i++) {
+			for (int j = 0; j < nN; j++) {
+				globalH[i][j] = 0.;
+			}
+		}
+
+		for (int i = 0; i < nN; i++) {
+			globalP[i] = 0.;
+		}
+
+		for (int i = 0; i < nN; i++) {
+			globalC[i] = new double[nN];
+		}
+		for (int i = 0; i < nN; i++) {
+			for (int j = 0; j < nN; j++) {
+				globalC[i][j] = 0.;
+			}
+		}
+
+		// increment dx = B / (nB - 1)
+		// increment dy = H / (nH - 1)
 
 		int increment = 0; // step to preserve proper node value going upwards in the grid
 
@@ -65,6 +123,20 @@ struct Grid {
 
 		}
 	};
+
+	~Grid() {
+		std::cout << "Grid destructor initialized. End of programme.\n";
+		for (int i = 0; i < nN; i++) {
+			delete[] globalH[i];
+		}
+		delete[] globalH;
+		for (int i = 0; i < nN; i++) {
+			delete[] globalC[i];
+		}
+		delete[] globalC;
+		delete[] globalP;
+	}
+
 	void printNodes() const;
 	void printElements() const;
 	static void printGlobalH(double** globalH, Grid G);

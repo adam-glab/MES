@@ -4,25 +4,19 @@
 using namespace std;
 
 struct Data {
-	// pass to Grid
-	int 
-		nIP = 2;
-	double 
-		H = 0.1,
-		B = 0.1;
-	int 
-		nH = 4, 
-		nB = 4;
+	int
+		nN,
+		nE;
 	// factor values
 	double 
-		k = 25., 
-		alpha = 25., 
-		t_env = 1200,
-		c = 700, 
-		ro = 7800, 
-		simTime = 500,
-		T0 = 100.,
-		dTau = 50;
+		k, 
+		alpha, 
+		t_env,
+		c, 
+		ro, 
+		simTime,
+		T0,
+		dTau;
 
 	int params[10] = { 0 };
 	double** d_nodes; // params[8] x 2
@@ -31,6 +25,5 @@ struct Data {
 	int bc_counter = 0;
 
 	void getParametersTest(ifstream& MyReadFile);
-	void setParameters(Grid* G);
-	
+	void setParameters(Grid &G);
 };

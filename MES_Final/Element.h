@@ -1,5 +1,5 @@
 #pragma once
 
-struct element {
+struct Element {
 	int ID[4] = { 0 }; // 4-side element, 4 ids
 };

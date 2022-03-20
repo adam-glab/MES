@@ -1,6 +1,6 @@
 #include "Solver.h"
 
-void Solver::calcJacobian(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G) {
+void Solver::calcJacobian(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid &G) {
 
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 2; j++) {
@@ -27,7 +27,7 @@ void Solver::calcJacobian(int nE, int nIP, jacobian* J, jacobian* J_inv, Element
 	//J->printJacobian();
 }
 
-void Solver::calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G, double k, double detJ, double** sumArray, double** globalArray) {
+void Solver::calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid &G, double k, double detJ, double** sumArray, double** globalArray) {
 
 	double dNdX[4] = { 0. };
 	double dNdY[4] = { 0. };
@@ -44,7 +44,7 @@ void Solver::calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 		}
 	}
 	/*
-	* include weight values for integral points
+	* include weight values for integral points:
 	* ==============
 	* w1w2 w2w2
 	* w1w1 w2w1
@@ -69,7 +69,7 @@ void Solver::calcHTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 	}
 }
 
-void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G, double alpha, double** sumArray) {
+void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid &G, double alpha, double** sumArray) {
 
 	//std::cout << ":::::Hbc for surface" << nIP + 1 << ":::::" << std::endl;
 	double NNT[4][4] = { 0. }; // hold sum(N_transposed * N) * alpha * detJ
@@ -129,7 +129,7 @@ void Solver::calcHbcTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4
 	}*/
 }
 
-void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G, double alpha, double t_env, double* sumArray) {
+void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid &G, double alpha, double t_env, double* sumArray) {
 
 	//std::cout << ":::::P for IP" << nIP + 1 << ":::::" << std::endl;
 	double NT[4] = { 0. }; // hold sum(N_transposed * t_env) * alpha * detJ
@@ -172,7 +172,7 @@ void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 
 	for (int x = 0; x < 4; x++) {
 		double tmp = NT[x];
-		sumArray[x] += round(tmp);
+		sumArray[x] += tmp;
 	}
 	/*for (int j = 0; j < 4; j++) {
 		std::cout << std::setw(12) << NT[j];
@@ -180,19 +180,11 @@ void Solver::calcPTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 	std::cout << std::endl;*/
 }
 
-void Solver::calcCTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid G, double c, double ro, double detJ, double** sumArray, double** globalArray){
+void Solver::calcCTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2D* E, Grid &G, double c, double ro, double detJ, double** sumArray, double** globalArray){
 	
 	/*
-	* include weight values for integral points
-	* ==============
-	* w1w2 w2w2
-	* w1w1 w2w1
-	* ==============
-	* w1w3 w2w3 w3w3
-	* w1w2 w2w2 w3w2
-	* w1w1 w2w1 w3w1
-	* ==============
-	* using mod E.nIP: index = 0,..E.nIP-1
+	* include weight values for integral points:
+	* identical rules to calcHTest
 	*/
 	double resArray[4][4] = { 0. };
 	for (int z = 0; z < 4; z++) {
@@ -209,7 +201,7 @@ void Solver::calcCTest(int nE, int nIP, jacobian* J, jacobian* J_inv, Element4_2
 	}
 }
 
-void Solver::includeTimeH(Grid G, double** matrixH, double** matrixC, double* vectorP, double dTau){
+void Solver::includeTimeH(Grid &G, double** matrixH, double** matrixC, double* vectorP, double dTau){
 	//std::cout << "::::::::::[H] = [H]+[C]/dT::::::::::" << std::endl;
 	for (int i = 0; i < G.nN; i++) {
 		for (int j = 0; j < G.nN; j++) {
@@ -281,7 +273,7 @@ double* Solver::gaussScheme(double** matrix, double* vector, int size)
 }
 
 
-void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, Grid G, double simTime, double timeStep) {
+void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, Grid &G, double simTime, double timeStep) {
 
 	double* newP_vec = new double[G.nN];
 	for (int x = 0; x < simTime / timeStep; x++) {
@@ -310,7 +302,6 @@ void Solver::calcNodeTemp(double** Hmatrix, double** Cmatrix, double* Pvector, G
 
 void Solver::getMinMax(double* arr, int size, int step){
 	double min, max;
-	int precision = 3;
 	max = arr[0];
 	min = arr[0];
 	for (int i = 0; i < size; i++) {
@@ -318,6 +309,59 @@ void Solver::getMinMax(double* arr, int size, int step){
 		if (min > arr[i]) min = arr[i];
 	}
 	std::cout << step << " ";
-	std::cout << std::fixed << std::setw(12) << std::showpoint << std::setprecision(precision);
+	std::cout << std::fixed << std::setw(12) << std::showpoint << std::setprecision(3);
 	std::cout << min << "  " << max << std::endl;
+}
+
+void Solver::solveFEM(int nIP, double k, double alpha, double t_env, double c, double ro, double dTau, double simTime, double T0, Grid &G, jacobian &J, jacobian &J_inv, Element4_2D &E) {
+	for (int i = 0; i < G.nE; i++) {
+		//std::cout << "::::::::ELEMENT " << i + 1 << "::::::::" << std::endl;
+		for (int j = 0; j < nIP * nIP; j++) {
+			Solver::calcJacobian(i, j, &J, &J_inv, &E, G);
+			double detJ = J.j_matrix[0][0] * J.j_matrix[1][1] - J.j_matrix[0][1] * J.j_matrix[1][0];
+			Solver::calcHTest(i, j, &J, &J_inv, &E, G, k, detJ, E.sumOfH, G.globalH);
+			Solver::calcCTest(i, j, &J, &J_inv, &E, G, c, ro, detJ, E.sumOfC, G.globalC);
+		}
+
+		// For each wall of element calculate Hbc and P vector
+		for (int x = 0; x < 4; x++) {
+			Solver::calcHbcTest(i, x, &J, &J_inv, &E, G, alpha, E.sumOfHbc);
+			Solver::calcPTest(i, x, &J, &J_inv, &E, G, alpha, t_env, E.sumOfP);
+		}
+
+		// Add to global H matrix and C matrix
+		for (int x = 0; x < 4; x++) {
+			for (int z = 0; z < 4; z++) {
+				G.globalH[G.elements[i].ID[x] - 1][G.elements[i].ID[z] - 1] += E.sumOfH[x][z] + E.sumOfHbc[x][z];
+				G.globalC[G.elements[i].ID[x] - 1][G.elements[i].ID[z] - 1] += E.sumOfC[x][z];
+			}
+		}
+
+		Element4_2D::printH(E.sumOfH, i);
+		Element4_2D::printHbc(E.sumOfHbc, i);
+		Element4_2D::printC(E.sumOfC, i);
+
+		// Add to global P vector
+		for (int z = 0; z < 4; z++) {
+			G.globalP[G.elements[i].ID[z] - 1] += E.sumOfP[z];
+		}
+
+		Element4_2D::printP(E.sumOfP, i);
+
+		// Reset arrays for next element
+		for (int x = 0; x < 4; x++) {
+			for (int z = 0; z < 4; z++) {
+				E.sumOfH[x][z] = 0.;
+				E.sumOfHbc[x][z] = 0.;
+				E.sumOfC[x][z] = 0.;
+			}
+		}
+		for (int z = 0; z < 4; z++) {
+			E.sumOfP[z] = 0.;
+		}
+	}
+
+	//Grid::printGlobalH(G.globalH, G);
+	//Grid::printGlobalP(G.globalP, G);
+	//Grid::printGlobalC(G.globalC, G);
 }

@@ -1,5 +1,4 @@
 #include "Jacobian.h"
-#include <iostream>
 
 void jacobian::printJacobian(){
 	std::cout << "=========================" << std::endl;

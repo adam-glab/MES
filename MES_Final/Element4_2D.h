@@ -8,11 +8,21 @@ struct Element4_2D {
 	// [4(walls)][nIP][4(N-func value)]
 	double*** N_shape = new double**[4]; 
 	// [nIP*nIP][4(N-func value)]
-	double** N_ofIP = new double* [nIP*nIP];
+	double** N_ofIP = new double* [nIP * nIP];
 	// [nIP*nIP][4(N-func value)]
 	double** dN_dE = new double* [nIP * nIP];
 	// [nIP*nIP][4(N-func value)]
 	double** dN_dn = new double* [nIP * nIP];
+
+	// sumOfH -> 2d array to hold H matrixes of each element
+	// H matrix in each integral point is calculated inside calcHTest function as a local matrix and then added to the sum
+	double** sumOfH = new double* [4];
+	// sumOfP -> 2d array to hold P matrixes of each element
+	double* sumOfP = new double[4];
+	// sumOfHbc -> 2d array to hold Hbc matrixes of each element
+	double** sumOfHbc = new double* [4];
+	// sumOfC -> 2d array to hold C matrixes of each element
+	double** sumOfC = new double* [4];
 
 	void printElementData() const;
 	static void printH(double**, int);
@@ -22,6 +32,37 @@ struct Element4_2D {
 
 	Element4_2D(int n0) : nIP(n0) {
 
+		for (int i = 0; i < 4; i++) {
+			sumOfH[i] = new double[4];
+		}
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				sumOfH[i][j] = 0.;
+			}
+		}
+
+		for (int i = 0; i < 4; i++) {
+			sumOfHbc[i] = new double[4];
+		}
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				sumOfHbc[i][j] = 0.;
+			}
+		}
+
+		for (int i = 0; i < 4; i++) {
+			sumOfP[i] = 0;
+		}
+
+		for (int i = 0; i < 4; i++) {
+			sumOfC[i] = new double[4];
+		}
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				sumOfC[i][j] = 0.;
+			}
+		}
+
 		// ====================== //
 		// nIP = 2
 		// ====================== //
@@ -29,7 +70,7 @@ struct Element4_2D {
 		if (n0 == 2) {
 			// initialize 2d arrays
 			g = new gauss(n0);
-			for (int i = 0; i < nIP*nIP; i++) {
+			for (int i = 0; i < nIP * nIP; i++) {
 				dN_dE[i] = new double[4];
 				dN_dn[i] = new double[4];
 				N_ofIP[i] = new double[4];
@@ -245,5 +286,19 @@ struct Element4_2D {
 			delete[] N_shape[x];
 		}
 		delete[] N_shape;
+
+		for (int i = 0; i < 4; i++) {
+			delete[] sumOfH[i];
+		}
+		delete[] sumOfH;
+		for (int i = 0; i < 4; i++) {
+			delete[] sumOfC[i];
+		}
+		delete[] sumOfC;
+		for (int i = 0; i < 4; i++) {
+			delete[] sumOfHbc[i];
+		}
+		delete[] sumOfHbc;
+		delete[] sumOfP;
 	}
 };
